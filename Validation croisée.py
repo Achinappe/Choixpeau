@@ -30,31 +30,31 @@ def indexation(tab):
     return index_id_characteristics
 
             
-def creation_donnees_test(tab):
-    joueurs_test = []
-    copie_joueurs = tab[:]
-    for _ in range(len(copie_joueurs) // 4):
-        joueurs_test.append(copie_joueurs.pop(randint(0, len(copie_joueurs) - 1)))
-    return joueurs_test, copie_joueurs
+def experimental_data_creation(tab):
+    test_characters = []
+    characters_copy = tab[:]
+    for _ in range(len(characters_copy) // 4):
+        test_characters.append(characters_copy.pop(randint(0, len(characters_copy) - 1)))
+    return test_characters, characters_copy
 
-def distance(joueur1, joueur_cible, methode='euclidienne'):
-    return int(sqrt((int(joueur1['Courage']) - int(joueur_cible['Courage']))** 2 
-                          + (int(joueur1['Ambition']) - int(joueur_cible['Ambition']))** 2 
-                          + (int(joueur1['Intelligence']) - int(joueur_cible['Intelligence']))** 2 
-                          + (int(joueur1['Good']) - int(joueur_cible['Good']))** 2))
+def distance(character1, target_character, methode='euclidienne'):
+    return int(sqrt((int(character1['Courage']) - int(target_character['Courage']))** 2 
+                          + (int(character1['Ambition']) - int(target_character['Ambition']))** 2 
+                          + (int(character1['Intelligence']) - int(target_character['Intelligence']))** 2 
+                          + (int(character1['Good']) - int(target_character['Good']))** 2))
 
-def ajout_distances(tab, joueur_inconnu):
-    for joueur in tab:
-        joueur['Distance'] = distance(joueur_inconnu, joueur)
+def distance_addition(tab, unknown_character):
+    for character in tab:
+        character['Distance'] = distance(unknown_character, character)
     return tab
 
 def best_house(tab):
     houses = {}
-    for voisin in tab:
-        if voisin['House'] in houses:
-            houses[voisin['House']] += 1
+    for neighbour in tab:
+        if neighbour['House'] in houses:
+            houses[neighbour['House']] += 1
         else:
-            houses[voisin['House']] = 1
+            houses[neighbour['House']] = 1
     maximum = 0
     for house, nb in houses.items():
         if nb > maximum:
@@ -62,24 +62,24 @@ def best_house(tab):
             top_house = house
     return top_house
 
-nb_tests = 100
+test_nb = 100
 temp = 0
 
 for k in range(1, 31):
     bingo = 0
-    for test in range(nb_tests):
-        joueurs_test, joueurs_reference = creation_donnees_test(updated_characters_tab)
-        for joueur_cible in joueurs_test:
-            joueurs_reference = ajout_distances(joueurs_reference, joueur_cible)
-            voisins = sorted(joueurs_reference, key=lambda x: x['Distance'])
-            if best_house(voisins[:k]) == joueur_cible['House']:
+    for test in range(test_nb):
+        test_characters, characters_remaining = experimental_data_creation(updated_characters_tab)
+        for target_character in test_characters:
+            characters_remaining = distance_addition(characters_remaining, target_character)
+            neighbours = sorted(characters_remaining, key=lambda x: x['Distance'])
+            if best_house(neighbours[:k]) == target_character['House']:
                 bingo += 1
         if bingo > temp:
             temp = bingo
-            meilleur_k = k
+            best_k = k
 
-    print(f"Pourcentage de réussite avec k = {k} : {round(bingo / len(joueurs_test))}")
-print(f"La meilleure valeur de k est : {meilleur_k}")
+    print(f"Pourcentage de réussite avec k = {k} : {round(bingo / len(test_characters))}")
+print(f"La meilleure valeur de k est : {best_k}")
 
 
 characteristics = [{'Courage' : 9, 'Ambition' : 2, 'Intelligence' : 8, 'Good' : 9},
@@ -87,23 +87,23 @@ characteristics = [{'Courage' : 9, 'Ambition' : 2, 'Intelligence' : 8, 'Good' : 
                    {'Courage' : 3, 'Ambition' : 8, 'Intelligence' : 6, 'Good' : 3},
                    {'Courage' : 2, 'Ambition' : 3, 'Intelligence' : 7, 'Good' : 8},
                    {'Courage' : 3, 'Ambition' : 4, 'Intelligence' : 8, 'Good' : 8}]
-for valeur in characteristics:
-    distance_jj = ajout_distances(updated_characters_tab, valeur)
-    resultat = sorted(distance_jj, key=lambda x: x['Distance'])
-    house_result = best_house(resultat[:meilleur_k])
-    print(f"La meilleur maison pour le personnage dont le profil est de {valeur['Courage']} de courage,"
-          f" {valeur['Ambition']} d'ambition, {valeur['Intelligence']} d'intelligence "
-          f"et de {valeur['Good']} de bonté est : {house_result}")
-choix_courage = int(input("Saisissez une valeur de courage : "))
-choix_ambition = int(input("Saisissez une valeur d'ambition : "))
-choix_intelligence = int(input("Saisissez une valeur d'intelligence : "))
-choix_bonte = int(input("Saisissez une valeur de bonté : "))
+for profile in characteristics:
+    distance_tab = distance_addition(updated_characters_tab, profile)
+    result = sorted(distance_tab, key=lambda x: x['Distance'])
+    house_result = best_house(result[:best_k])
+    print(f"La meilleur maison pour le personnage dont le profil est de {profile['Courage']} de courage,"
+          f" {profile['Ambition']} d'ambition, {profile['Intelligence']} d'intelligence "
+          f"et de {profile['Good']} de bonté est : {house_result}")
+courage_choice = int(input("Saisissez une valeur de courage : "))
+ambition_choice = int(input("Saisissez une valeur d'ambition : "))
+intelligence_choice = int(input("Saisissez une valeur d'intelligence : "))
+good_choice = int(input("Saisissez une valeur de bonté : "))
 
-chosen_characteristics = {'Courage' : choix_courage, 'Ambition' : choix_ambition, 'Intelligence' : choix_intelligence, 'Good' : choix_bonte}
+chosen_characteristics = {'Courage' : courage_choice, 'Ambition' : ambition_choice, 'Intelligence' : intelligence_choice, 'Good' : good_choice}
 
-custom_distance = ajout_distances(updated_characters_tab, chosen_characteristics)
+custom_distance = distance_addition(updated_characters_tab, chosen_characteristics)
 custom_result = sorted(custom_distance, key=lambda x: x['Distance'])
-custom_house_result = best_house(custom_result[:meilleur_k])
+custom_house_result = best_house(custom_result[:best_k])
 print(f"La meilleur maison pour le personnage dont le profil est de {chosen_characteristics['Courage']} de courage,"
       f" {chosen_characteristics['Ambition']} d'ambition, {chosen_characteristics['Intelligence']} d'intelligence "
       f"et de {chosen_characteristics['Good']} de bonté est : {custom_house_result}")
