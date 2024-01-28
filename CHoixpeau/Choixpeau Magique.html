@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <link rel="icon" href="https://cdn.icon-icons.com/icons2/1352/PNG/512/if-06-harry-potter-colour-sorting-hat-2730319_88134.png">
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/brython@3.12.0/brython.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/brython@3.12.0/brython_stdlib.js"></script>
+    <title>Choixpeau Magique</title>
+</head>
+
+<body onload="brython()">
+    <div>
+        <div class="wave"></div>
+        <div class="wave"></div>
+        <div class="wave"></div>
+    </div>
+    <script type="text/python">
+        from math import sqrt
+        from random import randint
+        from browser import html, document
+        
+
+        best_k = 0
+
+        def doc_importation(csv_file):
+            with open(csv_file, mode='r', encoding='utf-8') as f:
+                reader = csv.DictReader(f, delimiter=';')
+                tab = [{key: value.replace('\xa0', ' ') for key, value in element.items()} for element in reader]
+            return tab
+
+        def table_fusion(table1, table2):
+            new_tab = []
+            for kaggle_character in table1:
+                for poudlard_character in table2:
+                    if poudlard_character['Name'] == kaggle_character['Name']:
+                        kaggle_character.update(poudlard_character)
+                        new_tab.append(kaggle_character)
+            return new_tab
+
+        def indexation(tab):
+            index_id_characteristics = {int(character['Id']):
+                                         (character['Name'],
+                                          character['House'],
+                                          int(character['Courage']),
+                                          int(character['Ambition']),
+                                          int(character['Intelligence']),
+                                          int(character['Good']))
+                                        for character in tab}
+            return index_id_characteristics
+
+        characters_tab = doc_importation("Choixpeau Magique_files\Characters.csv")
+        characteristics_tab = doc_importation("Choixpeau Magique_files\Caracteristiques_des_persos.csv")
+        updated_characters_tab = table_fusion(characters_tab, characteristics_tab)
+
+        def experimental_data_creation(tab):
+            test_characters = []
+            characters_copy = tab[:]
+            for _ in range(len(characters_copy) // 4):
+                test_characters.append(characters_copy.pop(randint(0, len(characters_copy) - 1)))
+            return test_characters, characters_copy
+
+        def distance(character1, target_character, methode='euclidienne'):
+            return int(sqrt((int(character1['Courage']) - int(target_character['Courage'])) ** 2
+                            + (int(character1['Ambition']) - int(target_character['Ambition'])) ** 2
+                            + (int(character1['Intelligence']) - int(target_character['Intelligence'])) ** 2
+                            + (int(character1['Good']) - int(target_character['Good'])) ** 2))
+
+        def distance_addition(tab, unknown_character):
+            for character in tab:
+                character['Distance'] = distance(unknown_character, character)
+            return tab
+
+        def best_house(tab):
+            houses = {}
+            for neighbour in tab:
+                if neighbour['House'] in houses:
+                    houses[neighbour['House']] += 1
+                else:
+                    houses[neighbour['House']] = 1
+            maximum = 0
+            for house, nb in houses.items():
+                if nb > maximum:
+                    maximum = nb
+                    top_house = house
+            return top_house
+
+        def validation_croisee(ev):
+            test_nb = 100
+            temp = 0
+            global best_k
+
+            for k in range(1, 11, 2):
+                bingo = 0
+                for test in range(test_nb):
+                    test_characters, characters_remaining = experimental_data_creation(updated_characters_tab)
+                    for target_character in test_characters:
+                        characters_remaining = distance_addition(characters_remaining, target_character)
+                        neighbours = sorted(characters_remaining, key=lambda x: x['Distance'])
+                        if best_house(neighbours[:k]) == target_character['House']:
+                            bingo += 1
+                    if bingo > temp:
+                        temp = bingo
+                        best_k = k
+
+                document["texte_validation1"].html += f"- Pourcentage de réussite avec k = {k} : {round(bingo / len(test_characters))} <br>"
+            document["texte_validation2"].textContent = f"La meilleure valeur de k est : {best_k}"
+
+        document["Validation croisée"].bind("click", validation_croisee)
+
+        def profils_demandes(ev):
+            global best_k
+            if best_k != 0:
+                k = best_k
+            characteristics = [{'Courage': 9, 'Ambition': 2, 'Intelligence': 8, 'Good': 9},
+                               {'Courage': 6, 'Ambition': 7, 'Intelligence': 9, 'Good': 7},
+                               {'Courage': 3, 'Ambition': 8, 'Intelligence': 6, 'Good': 3},
+                               {'Courage': 2, 'Ambition': 3, 'Intelligence': 7, 'Good': 8},
+                               {'Courage': 3, 'Ambition': 4, 'Intelligence': 8, 'Good': 8}]
+            for profile in characteristics:
+                distance_tab = distance_addition(updated_characters_tab, profile)
+                result = sorted(distance_tab, key=lambda x: x['Distance'])
+                house_result = best_house(result[:k])
+                document["texte_profils"].html += (
+                    f"<br>- La meilleure maison pour le personnage dont le profil est de {profile['Courage']} de courage,"
+                    f" {profile['Ambition']} d'ambition, {profile['Intelligence']} d'intelligence "
+                    f"et de {profile['Good']} de bonté est : {house_result} <br>")
+        document["Profils demandés"].bind("click", profils_demandes)
+
+        def profil_personnalise(ev):
+            global best_k
+            if best_k != 0:
+                k = best_k
+            courage_choice = int(input("Saisissez une valeur de courage : "))
+            ambition_choice = int(input("Saisissez une valeur d'ambition : "))
+            intelligence_choice = int(input("Saisissez une valeur d'intelligence : "))
+            good_choice = int(input("Saisissez une valeur de bonté : "))
+
+            chosen_characteristics = {'Courage': courage_choice, 'Ambition': ambition_choice,
+                                      'Intelligence': intelligence_choice, 'Good': good_choice}
+
+            custom_distance = distance_addition(updated_characters_tab, chosen_characteristics)
+            custom_result = sorted(custom_distance, key=lambda x: x['Distance'])
+            custom_house_result = best_house(custom_result[:k])
+            document["texte_profil_personnalisé"].textContent = (
+                f"La meilleure maison pour le personnage dont le profil est de {chosen_characteristics['Courage']} de courage,"
+                f" {chosen_characteristics['Ambition']} d'ambition, {chosen_characteristics['Intelligence']} d'intelligence "
+                f"et de {chosen_characteristics['Good']} de bonté est : {custom_house_result}")
+        document["Profil personnalisé"].bind("click", profil_personnalise)
+
+    </script>
+
+    <main>
+        <article>
+            <h2 class="animate-charcter">CHOIXPEAU</h2>
+            <h3>Validation croisée</h3>
+            <button class="glow-on-hover" type="button" id="Validation croisée">Faire une validation croisée</button>
+            <p id="texte_validation1">Validation croisée : </p>
+            <p id="texte_validation2">Résultat : </p>
+
+            <h3>Profils demandés</h3>
+            <button class="glow-on-hover" type="button" id="Profils demandés">Afficher résultats demandés</button>
+            <p id="texte_profils">Affichage des profils demandés : </p>
+
+            <h3>Profil personnalisé</h3>
+            <button class="glow-on-hover" type="button" id="Profil personnalisé">Afficher profil personnalisé</button>
+            <p id="texte_profil_personnalisé">Profil personnalisé : </p>
+        </article>
+    </main>
+
+    <footer>
+        <p>©Copyright 2024 par le groupe Choixpeau. Tous droits reversés.</p>
+    </footer>
+</body>
+</html>
