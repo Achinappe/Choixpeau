@@ -111,6 +111,8 @@
                     f"<br>- La meilleure maison pour le personnage dont le profil est de {profile['Courage']} de courage,"
                     f" {profile['Ambition']} d'ambition, {profile['Intelligence']} d'intelligence "
                     f"et de {profile['Good']} de bonté est : {house_result} <br>")
+				for i in range(k_value):
+					document["texte_profils"].html += f"{house_result[i][0]}, de la maison {resultat[i][2]} est un des plus proches voisins du profil ")
         document["Profils demandés"].bind("click", profils_demandes)
 
         def profil_personnalise(ev, k_value=best_k):
