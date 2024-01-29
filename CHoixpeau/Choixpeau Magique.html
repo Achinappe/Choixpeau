@@ -28,6 +28,11 @@
 		main_index = indexation(updated_characters_tab)
 
         def indexation(tab):
+		'''
+		Fait l'indexation d'une table donnée
+		Entrée : tab, table de personnages et de caractéristiques
+		Sortie : index_id_characteristics, table indexée
+		'''
             index_id_characteristics = {int(character['Id']):
                                          (character['Name'],
                                           character['House'],
@@ -39,6 +44,11 @@
             return index_id_characteristics
 			
         def experimental_data_creation(tab):
+		'''
+		Crée des données pour la validation croisée
+		Entrée : tab, table à échantilloner
+		Sortie : test_characters, characters_copy; tables composant la table d'origine
+		'''
             test_characters = []
             characters_copy = tab[:]
             for _ in range(len(characters_copy) // 4):
@@ -46,17 +56,35 @@
             return test_characters, characters_copy
 
         def distance(character1, target_character, methode='euclidienne'):
+		'''
+		Fait le calcul de distance entre deux personnages
+		Entrée : character1, personnage test 
+				 test_character, personnage dont on calcule la distance
+				 methode, la méthode utilisée
+		Sortie : la distance euclidienne
+		'''
             return int(sqrt((int(character1['Courage']) - int(target_character['Courage'])) ** 2
                             + (int(character1['Ambition']) - int(target_character['Ambition'])) ** 2
                             + (int(character1['Intelligence']) - int(target_character['Intelligence'])) ** 2
                             + (int(character1['Good']) - int(target_character['Good'])) ** 2))
 
         def distance_addition(tab, unknown_character):
+		'''
+		Fait la sommme des distances d'un personnage
+		Entrée : tab, table contenant les personnages à comparer au profil test
+				 unknown_character, profil à tester
+		Sortie : tab, table contenant toutes les distances du personnage
+		'''
             for character in tab.values():
                 character['Distance'] = distance(unknown_character, character)
             return tab
 
         def best_house(tab):
+		'''
+		Détermine la maison la plus appropriée pour un profil donné
+		Entrée : tab, table des voisins du profil testé
+		Sortie : top_house, meilleure maison pour le profil testé
+		'''
             houses = {}
             for neighbour in tab:
                 if neighbour['House'] in houses:
@@ -71,6 +99,11 @@
             return top_house
 
         def validation_croisee(ev):
+		'''
+		Effectue la validation croisée
+		Entrée : ev, évènement qui déclenche la fonction
+		Sortie : None
+		'''
             test_nb = 100
             temp = 0
             global best_k
@@ -96,6 +129,12 @@
         document["Validation croisée"].bind("click", validation_croisee)
 
         def profils_demandes(ev, k_value=best_k):
+		'''
+		Affiche les résultats pour les profils demandés 
+		Entrée : ev, évènement qui déclenche la fonction
+				 k_value, valeur de k utilisée
+		Sortie : None 
+		'''
             if k_value != 0:
                 k = k_value
             characteristics = [{'Courage': 9, 'Ambition': 2, 'Intelligence': 8, 'Good': 9},
@@ -116,6 +155,12 @@
         document["Profils demandés"].bind("click", profils_demandes)
 
         def profil_personnalise(ev, k_value=best_k):
+		'''
+		Fait le résultat avec un profil personnalisé
+		Entrée : ev, évènement qui déclenche la fonction
+				 k_value, valeur de k utilisée
+		Sortie : None
+		'''
             if k_value != 0:
                 k = k_value
             courage_choice = int(input("Saisissez une valeur de courage : "))
