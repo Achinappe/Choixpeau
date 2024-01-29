@@ -1,0 +1,31 @@
+def doc_importation(csv_file):
+            with open(csv_file, mode='r', encoding='utf-8') as f:
+                reader = csv.DictReader(f, delimiter=';')
+                tab = [{key: value.replace('\xa0', ' ') for key, value in element.items()} for element in reader]
+            return tab
+
+        def table_fusion(table1, table2):
+            new_tab = []
+            for kaggle_character in table1:
+                for poudlard_character in table2:
+                    if poudlard_character['Name'] == kaggle_character['Name']:
+                        kaggle_character.update(poudlard_character)
+                        new_tab.append(kaggle_character)
+            return new_tab
+
+
+with open("Characters.csv", mode='r', encoding='utf-8') as f:
+			reader = csv.DictReader(f, delimiter=';')
+            characters_tab = [{key: value.replace('\xa0', ' ') for key, value in element.items()} for element in reader]
+  
+		with open("Caracteristiques_des_persos.csv", mode='r', encoding='utf-8') as f:
+            reader = csv.DictReader(f, delimiter=';')
+            characteristics_tab = [{key: value.replace('\xa0', ' ') for key, value in element.items()} for element in reader]
+  
+ 
+        updated_characters_tab = []
+        for kaggle_character in characters_tab:
+            for poudlard_character in characteristics_tab:
+                if poudlard_character['Name'] == kaggle_character['Name']:
+                    kaggle_character.update(poudlard_character)
+                    updated_characters_tab.append(kaggle_character)
