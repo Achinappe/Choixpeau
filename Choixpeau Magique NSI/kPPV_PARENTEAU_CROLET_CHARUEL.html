@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <link rel="icon" href="https://cdn.icon-icons.com/icons2/1352/PNG/512/if-06-harry-potter-colour-sorting-hat-2730319_88134.png">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/brython/3.11.2/brython.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/brython/3.11.2/brython_stdlib.min.js"></script>
+    <title>Choixpeau Magique</title>
+</head>
+
+<body onload="brython()">
+    <div>
+        <div class="wave"></div>
+        <div class="wave"></div>
+        <div class="wave"></div>
+    </div>
+    <script type="text/python">
+        # coding: utf-8
+        '''
+        Paul PARENTEAU-DENOEL
+        Alexandre CROLET
+        Arthur CHARUEL
+
+        Programme permettant d'exécuter l'algorithme des plus proches voisins des personnages d'Harry Potter
+
+        lien de la forge github : https://github.com/Achinappe/Choixpeau/tree/main
+        Licence : CC-BY-HA
+        Version : 1.12.1
+        '''
+        from math import sqrt
+        from random import randint
+        from browser import html, document
+        import csv
+
+
+        with open("Characters.csv", mode='r', encoding='utf-8') as f:
+            reader = csv.DictReader(f, delimiter=';')
+            characters_tab = [{key : value.replace('\xa0', ' ') for key, value in element.items()} for element in reader]
+
+
+        with open("Caracteristiques_des_persos.csv", mode='r', encoding='utf-8') as f:
+            reader = csv.DictReader(f, delimiter=';')
+            characteristics_tab = [dico for dico in reader]
+        
+        updated_characters_tab = []
+        for kaggle_character in characters_tab:
+            for poudlard_character in characteristics_tab:
+                if poudlard_character['Name'] == kaggle_character['Name']:
+                    kaggle_character.update(poudlard_character)
+                    updated_characters_tab.append(kaggle_character)
+
+        
+        
+
+        def indexation(tab: list) -> dict:
+            '''
+            Indexe une table en Entrée
+            Entrée : tab, table à indexer
+            Sortie : index_id_characteristics, table indexée
+            '''
+            index_id_characteristics = {int(character['Id']):
+                                         (character['Name'],
+                                          character['House'],
+                                          int(character['Courage']),
+                                          int(character['Ambition']),
+                                          int(character['Intelligence']),
+                                          int(character['Good']))
+                                         for character in tab}
+            return index_id_characteristics
+
+        def experimental_data_creation(indexed_tab: dict) -> dict:
+            '''
+            Crée des données test à partir d'une table en Entrée
+            Entrée : indexed_tab, table indexée à séparer
+            Sortie : test_characters, table de personnages test
+            '''
+            test_characters = []
+            characters_copy = list(indexed_tab.keys())
+            for _ in range(len(characters_copy) // 4):
+                test_characters.append(indexed_tab[characters_copy.pop(randint(0, len(characters_copy) - 1))])
+            return test_characters, {charac: indexed_tab[charac] for charac in characters_copy}
+
+        def distance(character1: list, target_character: list, methode='euclidienne') -> int:
+            '''
+            Calcule la distance entre deux personnages
+            Entrée : character1, personnage test; target_character, personnage à tester
+            Sortie : target_character, personnage à test_characters
+            '''
+            return int(sqrt((character1[2] - target_character[2]) ** 2
+                            + (character1[3] - target_character[3]) ** 2
+                            + (character1[4] - target_character[4]) ** 2
+                            + (character1[5] - target_character[5]) ** 2))
+
+        def distance_addition(tab: dict, unknown_character: list) -> list:
+            '''
+            Assemble toutes les distances calculées auparavant
+            Entrée : tab, table de support; unknown_character, personnage à tester 
+            Sortie : distance_tab, table des distances avec les personnages
+            '''
+            distance_tab = []
+            for character in tab:
+                character_list = list(character)
+                character_list.append(distance(unknown_character, character))
+                distance_tab.append(tuple(character_list))
+            return distance_tab
+
+        def best_house(tab: list) -> str:
+            '''
+            Détermine la maison la plus adaptée pour un profil à partir d'une table de distances
+            Entrée : tab, table des distances 
+            Sortie : top_house, meilleure maison
+            '''
+            houses = {}
+            for neighbour in tab:
+                if neighbour[1] in houses:
+                    houses[neighbour[1]] += 1
+                else:
+                    houses[neighbour[1]] = 1
+            maximum = 0
+            for house, nb in houses.items():
+                if nb > maximum:
+                    maximum = nb
+                    top_house = house
+            return top_house
+
+        indexed_characters_tab = indexation(updated_characters_tab)
+        best_k = 0
+        
+        def validation_croisee(ev):
+            '''
+            Effectue la validation croisée
+            Entrée : ev, évènement qui déclenche la fonction
+            Sortie : None
+            '''
+            global best_k
+            document["texte_validation1"].html = ""
+            document["texte_validation2"].html = ""
+            test_nb = int(input("Saisissez le nombre de test à effectuer pour chaque valeur de k. Une valeur élevée permet une meilleure précision mais a un coût en performances"))
+            temp = 0
+
+            for k in range(1, 11, 2):
+                bingo = 0
+                for test in range(test_nb):
+                    test_characters, characters_remaining = experimental_data_creation(indexed_characters_tab)
+                    for target_character in test_characters:
+                        characters_with_distances = distance_addition(list(characters_remaining.values()), target_character)
+                        neighbours = sorted(characters_with_distances, key=lambda x: x[-1])
+                        if best_house(neighbours[:k]) == target_character[1]:
+                            bingo += 1
+                    if bingo > temp:
+                        temp = bingo
+                        best_k = k        
+
+                document["texte_validation1"].html += f"- Pourcentage de réussite avec k = {k} : {round(bingo / len(test_characters))} %<br>"
+            document["texte_validation2"].textContent = f"La meilleure valeur de k est : {best_k}"
+        document["Validation croisée"].bind("click", validation_croisee)
+
+        def profils_demandes(ev):
+            '''
+            Affiche les résultats pour les profils demandés 
+            Entrée : ev, évènement qui déclenche la fonction
+            Sortie : None 
+            '''
+            global best_k
+            if best_k == 0:
+                best_k = 5
+            document["texte_profils"].html = ""
+            characteristics = [(None, None, 9, 2, 8, 9),
+                              (None, None, 6, 7, 9, 7),
+                              (None, None, 3, 8, 6, 3),
+                              (None, None, 2, 3, 7, 8),
+                              (None, None, 3, 4, 8, 8)]
+
+            for profile in characteristics:
+                profile_distance = distance_addition(list(indexed_characters_tab.values()), profile)
+                result = sorted(profile_distance, key=lambda x: x[-1])
+                house_result = best_house(result[:best_k])
+                document["texte_profils"].html += (f"La meilleure maison pour le personnage dont le profil est de {profile[2]} de courage,"
+                      f" {profile[3]} d'ambition, {profile[4]} d'intelligence "
+                      f"et de {profile[5]} de bonté est : {house_result}<br>"
+                      f"En effet, il a pour voisins :<br>")
+                for j in range(best_k):
+                    document["texte_profils"].html += f"- {result[j][0]} de la maison {result[j][1]}<br>"
+                document["texte_profils"].html += "<br>"
+        document["Profils demandés"].bind("click", profils_demandes)
+
+
+        def profil_personnalise(ev):
+            '''
+            Fait le résultat avec un profil personnalisé
+            Entrée : ev, évènement qui déclenche la fonction
+            Sortie : None
+            '''
+            global best_k
+            if best_k == 0:
+                best_k = 5
+            courage_choice = int(input("Saisissez une valeur de courage : "))
+            ambition_choice = int(input("Saisissez une valeur d'ambition : "))
+            intelligence_choice = int(input("Saisissez une valeur d'intelligence : "))
+            good_choice = int(input("Saisissez une valeur de bonté : "))
+
+            chosen_characteristics = (None, None, courage_choice, ambition_choice, intelligence_choice, good_choice)
+
+            custom_distance = distance_addition(list(indexed_characters_tab.values()), chosen_characteristics)
+            custom_result = sorted(custom_distance, key=lambda x: x[-1])
+            custom_house_result = best_house(custom_result[:best_k])
+            document["texte_profil_personnalisé"].html = (f"La meilleur maison pour le personnage dont le profil est de {chosen_characteristics[2]} de courage,"
+                  f" {chosen_characteristics[3]} d'ambition, {chosen_characteristics[4]} d'intelligence "
+                  f"et de {chosen_characteristics[5]} de bonté est : {custom_house_result}"
+                  f"<br>En effet, il a pour voisins :<br>")
+            for i in range(best_k):
+                document["texte_profil_personnalisé"].html += f"- {custom_result[i][0]} de la maison {custom_result[i][1]}<br>"
+        document["Profil personnalisé"].bind("click", profil_personnalise)
+    </script>
+
+    <main>
+        <article>
+            <h2 class="animate-charcter">CHOIXPEAU</h2>
+            <h3>Validation croisée</h3>
+            <button class="glow-on-hover" type="button" id="Validation croisée">Faire une validation croisée</button>
+            <p id="texte_validation1">Validation croisée : </p>
+            <p id="texte_validation2">Résultat : </p>
+
+            <h3>Profils demandés</h3>
+            <button class="glow-on-hover" type="button" id="Profils demandés">Afficher résultats demandés</button>
+            <p id="texte_profils">Affichage des profils demandés : </p>
+
+            <h3>Profil personnalisé</h3>
+            <button class="glow-on-hover" type="button" id="Profil personnalisé">Afficher profil personnalisé</button>
+            <p id="texte_profil_personnalisé">Profil personnalisé : </p>
+        </article>
+    </main>
+
+    <footer>
+        <p>© Copyright 2024 par le groupe Choixpeau. Tous droits réservés.</p>
+    </footer>
+</body>
+</html>
+

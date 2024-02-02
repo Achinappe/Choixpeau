@@ -1,0 +1,28 @@
+VARIABLES 
+    maisons, dico des maisons et de leur récurrence
+    tab, table comprenant les personnages, leurs maisons et leur distance du profil cible
+    meilleureMaison, la maison choisie pour le profil
+    
+DEBUT
+    distance_tab = []
+    
+    maisons ← {}
+
+    POUR chaque voisin DANS tab FAIRE
+        SI voisin[1] EST DANS maisons ALORS
+            maisons[voisin[1]] ← maisons[voisin[1]] + 1
+        SINON
+            maisons[voisin[1]] ← 1
+        FIN_SI
+    FIN_POUR
+
+  
+    maximum ← 0
+    POUR chaque maison, nb DANS maisons FAIRE
+        SI nb > maximum ALORS
+            maximum ← nb
+            meilleureMaison ← maison
+        FIN_SI
+    FIN_POUR
+
+FIN
