@@ -1,0 +1,43 @@
+Python a mettre en pseudo-code :
+
+def distance(character1: list, target_character: list, methode='euclidienne') -> int:
+            '''
+            Calcule la distance entre deux personnages
+            Entrée : character1, personnage test; target_character, personnage à tester
+            Sortie : target_character, personnage à test_characters
+            '''
+            return int(sqrt((character1['Courage'] - target_character['Courage']) ** 2
+                            + (character1['Ambition'] - target_character['Ambition']) ** 2
+                            + (character1['Intelligence'] - target_character['Intelligence']) ** 2
+                            + (character1['Good'] - target_character['Good']) ** 2))
+
+        def distance_addition(tab: dict, unknown_character: list) -> list:
+            '''
+            Assemble toutes les distances calculées auparavant
+            Entrée : tab, table de support; unknown_character, personnage à tester 
+            Sortie : distance_tab, table des distances avec les personnages
+            '''
+            distance_tab = []
+            for character in tab.values():
+                character['Distance'] = distance(unknown_character, character)
+                distance_tab.append(character)
+            return distance_tab
+
+        def best_house(tab: list) -> str:
+            '''
+            Détermine la maison la plus adaptée pour un profil à partir d'une table de distances
+            Entrée : tab, table des distances 
+            Sortie : top_house, meilleure maison
+            '''
+            houses = {}
+            for neighbour in tab:
+                if neighbour['House'] in houses:
+                    houses[neighbour['House']] += 1
+                else:
+                    houses[neighbour['House']] = 1
+            maximum = 0
+            for house, nb in houses.items():
+                if nb > maximum:
+                    maximum = nb
+                    top_house = house
+            return top_house
