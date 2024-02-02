@@ -28,12 +28,13 @@
         Licence : CC-BY-HA
         Version : 1.12.1
         '''
+        
         from math import sqrt
         from random import randint
         from browser import html, document
         import csv
 
-
+        #importation des personnages et des caractéristiques
         with open("Characters.csv", mode='r', encoding='utf-8') as f:
             reader = csv.DictReader(f, delimiter=';')
             characters_tab = [{key : value.replace('\xa0', ' ') for key, value in element.items()} for element in reader]
@@ -43,6 +44,7 @@
             reader = csv.DictReader(f, delimiter=';')
             characteristics_tab = [dico for dico in reader]
         
+        #fusion de tables
         updated_characters_tab = []
         for kaggle_character in characters_tab:
             for poudlard_character in characteristics_tab:
@@ -52,7 +54,7 @@
 
         
         
-
+        #définitions de fonctions
         def indexation(tab: list) -> dict:
             '''
             Indexe une table en Entrée
@@ -123,7 +125,7 @@
                     maximum = nb
                     top_house = house
             return top_house
-
+        #définition de variables importantes
         indexed_characters_tab = indexation(updated_characters_tab)
         best_k = 0
         
@@ -139,6 +141,7 @@
             test_nb = int(input("Saisissez le nombre de test à effectuer pour chaque valeur de k. Une valeur élevée permet une meilleure précision mais a un coût en performances"))
             temp = 0
 
+            #exécution des test
             for k in range(1, 11, 2):
                 bingo = 0
                 for test in range(test_nb):
@@ -171,7 +174,7 @@
                               (None, None, 3, 8, 6, 3),
                               (None, None, 2, 3, 7, 8),
                               (None, None, 3, 4, 8, 8)]
-
+            #programme plus proche voisin
             for profile in characteristics:
                 profile_distance = distance_addition(list(indexed_characters_tab.values()), profile)
                 result = sorted(profile_distance, key=lambda x: x[-1])
