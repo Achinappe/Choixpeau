@@ -1,0 +1,154 @@
+body {
+    /* font-family: "Comic Sans MS", "Comic Sans", cursive; */
+    font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+header, nav, main, footer {
+    margin: 20px;
+}
+
+article {
+    /* font-family: "Comic Sans MS", "Comic Sans", cursive; */
+    font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+    background-color: #f8f8f8a8;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+}
+
+h2 {
+    color: #000000;
+    text-decoration: underline;
+    font-size: 10px;
+}
+
+h3 {
+    color: #000000;
+    text-decoration: underline;
+}
+
+button {
+    background-color: #462c13;
+    color: #fff;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-bottom: 10px;
+}
+
+p {
+    line-height: 1.5;
+    color: #000000;
+}
+
+footer {
+    margin-top: 50px;
+    text-align: center;
+    color: #777;
+}
+.glow-on-hover {
+    width: 220px;
+    height: 50px;
+    border: none;
+    outline: none;
+    color: #fff;
+    background: #111;
+    cursor: pointer;
+    position: relative;
+    z-index: 0;
+    border-radius: 10px;
+}
+
+.glow-on-hover:before {
+    content: '';
+    background: linear-gradient(45deg, #ff0000, #fffb00, #002bff, #7a00ff, #ff00c8, #ff0000);
+    position: absolute;
+    top: -2px;
+    left:-2px;
+    background-size: 400%;
+    z-index: -1;
+    filter: blur(5px);
+    width: calc(100% + 4px);
+    height: calc(100% + 4px);
+    animation: glowing 20s linear infinite;
+    opacity: 0;
+    transition: opacity .3s ease-in-out;
+    border-radius: 10px;
+}
+
+.glow-on-hover:active {
+    color: #000
+}
+
+.glow-on-hover:active:after {
+    background: transparent;
+}
+
+.glow-on-hover:hover:before {
+    opacity: 1;
+}
+
+.glow-on-hover:after {
+    z-index: -1;
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: #000000;
+    left: 0;
+    top: 0;
+    border-radius: 10px;
+}
+
+@keyframes glowing {
+    0% { background-position: 0 0; }
+    50% { background-position: 400% 0; }
+    100% { background-position: 0 0; }
+}
+body {
+    margin: auto;
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    background-image: url('https://24.media.tumblr.com/tumblr_lhlf7hJalD1qdw1bro1_500.gif');
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-size: cover;
+}
+
+.animate-charcter {
+    text-transform: uppercase;
+    background-image: linear-gradient(
+      to right,
+      rgb(75, 43, 18) 0%,
+      rgb(83, 94, 37) 25%,
+      rgb(9, 39, 13) 50%,
+      rgb(45, 17, 61) 50%,
+      rgb(58, 52, 16) 50%,
+      rgb(42, 46, 9) 50%,
+      rgb(13, 31, 8) 50%,  
+      rgb(43, 14, 14) 75%,
+      rgb(49, 17, 47) 100%
+    );
+    background-size: 200% 100%;
+    background-clip: text;
+    text-fill-color: transparent;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: textclip 4s linear infinite;
+    display: inline-block;
+    font-size: 80px;
+}
+
+@keyframes textclip {
+    0% {
+      background-position: -100% 0%;
+    }
+    100% {
+      background-position: 100% 0%;
+    }
+}
+
+
+  
