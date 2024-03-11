@@ -17,9 +17,11 @@ from browser import html, document, window
 import csv
 
 choix_son = window.prompt("Cette page est sonore ! Voulez vous désactiver le son ? \n1. Oui\n2. Non")
+
 with open("Question.csv", mode='r', encoding='utf-8') as f:
     reader = csv.DictReader(f, delimiter=';')
     DICO_Q = [dico for dico in reader]
+print(DICO_Q)
 
 #importation des personnages et des caractéristiques
 with open("Characters.csv", mode='r', encoding='utf-8') as f:
@@ -119,40 +121,10 @@ def best_house(tab: dict) -> str:
 indexed_characters_tab = indexation(updated_characters_tab)
 best_k = 0
 
-def validation_croisee(ev):
-    '''
-    Effectue la validation croisée
-    Entrée : ev, évènement qui déclenche la fonction
-    Sortie : None
-    '''
-    global best_k
-    document["texte_validation1"].html = ""
-    document["texte_validation2"].html = ""
-    test_nb = int(input("Saisissez le nombre de test à effectuer pour chaque valeur de k. Une valeur élevée permet une meilleure précision mais a un coût en performances"))
-    temp = 0
-
-    #exécution des test
-    for k in range(1, 11, 2):
-        bingo = 0
-        for test in range(test_nb):
-            test_characters, characters_remaining = experimental_data_creation(updated_characters_tab)
-            for target_character in test_characters.values():
-                characters_with_distances = distance_addition(characters_remaining, target_character)
-                neighbours = sorted(characters_with_distances, key=lambda x: x['Distance'])
-                if best_house(neighbours[:k]) == target_character['House']:
-                    bingo += 1
-            if bingo > temp:
-                temp = bingo
-                best_k = k        
-        #affichage
-        document["texte_validation1"].html += f"- Pourcentage de réussite avec k = {k} : {round(bingo / len(test_characters.values()), 2)} %<br>"
-    document["texte_validation2"].textContent = f"La meilleure valeur de k est : {best_k}"
-
 
 progression_question = 0
 
 def demarrage(ev):
-    global DICO_Q
     global progression_question
     document["Demarrage"].remove()
     document["espace_interactif"].clear()
@@ -166,10 +138,9 @@ def demarrage(ev):
         button.textContent = DICO_Q[progression_question][reponse]
         button.id = f"Reponse{compteur}"
         compteur += 1
-        button.classList.add("glow-on-hover")
-        br = document.createElement('br')            
+        button.classList.add("glow-on-hover")        
         document["espace_interactif"] <= button
-        document["espace_interactif"] <= br
+        document["espace_interactif"] <= html.B("<br>")
         document[button.id].bind("click", buttone)
     progression_question += 1
 
@@ -179,12 +150,10 @@ def reinitialiser_questionnaire(ev):
     global bareme_global
     global best_k
 
-    # Réinitialiser les variables
     progression_question = 0
     bareme_global = {'Ambition': 0, 'Courage': 0, 'Good': 0, 'Intelligence': 0}
     best_k = 0
 
-    # Réinitialiser le HTML
     bouton_demarrage = html.BUTTON("Démarrer le questionnaire", id="Demarrage")
     bouton_demarrage.classList.add("glow-on-hover")
     document["espace_interactif"] <= bouton_demarrage
@@ -202,11 +171,9 @@ def buttone(ev):
     Fait des trucs
     '''
     global progression_question
-    global DICO_QUESTION
     global bareme_global
-    global choix_son
     bouton_id = ev.target.id
-    if progression_question < 9:
+    if progression_question < 12:
         document["Reponse1"].textContent = DICO_Q[progression_question]['Reponse A']
         document["Reponse2"].textContent = DICO_Q[progression_question]['Reponse B']
         document["Reponse3"].textContent = DICO_Q[progression_question]['Reponse C']
@@ -228,7 +195,9 @@ def buttone(ev):
         document["Reponse2"].remove()
         document["Reponse3"].remove()
         resultat_maison = profil_personnalise(bareme_global)
-        document["espace_interactif"] <= f"Tu appartiens à la maison {resultat_maison} !"
+        document["espace_interactif"] <= html.B("<br>")
+        document["espace_interactif"] <= f"Tu appartiens donc à la maison {resultat_maison} !"
+        document["espace_interactif"] <= html.B("<br>")
         if resultat_maison == 'Gryffindor':
             document["display"] <= html.IMG(src='gryffondor.jpg', width=300, height=400)
             sound_file = 'gryffondor'
@@ -242,8 +211,8 @@ def buttone(ev):
             document["display"] <= html.IMG(src='serdaigle.gif', width=300, height=400)
             sound_file = 'serdaigle'
         if choix_son == '2':
-                house_audio = html.AUDIO(src=f'{sound_file}.mp3', autoplay=True)
-                house_audio.volume = 0.5
+            house_audio = html.AUDIO(src=f'{sound_file}.mp3', autoplay=True)
+            house_audio.volume = 0.5
         bouton_redemarrage = document.createElement('button')
         bouton_redemarrage.classList.add("glow-on-hover")
         bouton_redemarrage.textContent = "Redémarrer le questionnaire ?"
@@ -281,11 +250,9 @@ def profil_personnalise(chosen_characteristics):
     custom_distance = distance_addition(indexed_characters_tab, chosen_characteristics)
     custom_result = sorted(custom_distance, key=lambda x: x['Distance'])
     custom_house_result = best_house(custom_result[:best_k])
-    document["espace_interactif"].html <= (f"La meilleur maison pour le personnage dont le profil est de {chosen_characteristics['Courage']} de courage,"
-            f" {chosen_characteristics['Ambition']} d'ambition, {chosen_characteristics['Intelligence']} d'intelligence "
-            f"et de {chosen_characteristics['Good']} de bonté est : {custom_house_result}"
-            f"<br>En effet, il a pour voisins :<br>")
-    document["texte_profil_personnalisé"].html = "Tes plus proches voisins sont : "
+    document["espace_interactif"] <= "Tes plus proches voisins sont : "
+    document["espace_interactif"] <= html.B("<br>")
     for i in range(best_k):
-        document["texte_profil_personnalisé"].html += f"- {custom_result[i]['Name']} de la maison {custom_result[i]['House']}<br>"
+        document["espace_interactif"] <= f"- {custom_result[i]['Name']} de la maison {custom_result[i]['House']}"
+        document["espace_interactif"] <= html.B("<br>")
     return custom_house_result
