@@ -11,11 +11,12 @@ header, nav, main, footer {
 
 article {
     /* font-family: "Comic Sans MS", "Comic Sans", cursive; */
-    font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+    font-family: 'Cursive', sans-serif;
     background-color: #f8f8f8a8;
     padding: 20px;
     border-radius: 10px;
     text-align: center;
+    text-decoration: underline;
 }
 
 h2 {
@@ -37,6 +38,7 @@ button {
     border-radius: 5px;
     cursor: pointer;
     margin-bottom: 10px;
+    font-size: 12px;
 }
 
 p {
