@@ -184,11 +184,14 @@ def buttone(ev):
             bareme_correspondant = 'Bareme B'
         else:
             bareme_correspondant = 'Bareme C'
-        pairs = [pair.strip() for pair in DICO_Q[progression_question][bareme_correspondant].split(',')]
-        data_dict = dict(pair.split(':') for pair in pairs)
-        data_dict = {key.strip(): int(value.strip()) for key, value in data_dict.items()}
-        bareme_global = {key: bareme_global[key] + data_dict[key] / 5 for key in data_dict.keys()}
+        valeurs_bareme = tuple(DICO_Q[progression_question][bareme_correspondant].strip("()").split(","))
+        bareme_global['Ambition'] += int(valeurs_bareme[0])
+        bareme_global['Courage'] += int(valeurs_bareme[1])
+        bareme_global['Good'] += int(valeurs_bareme[2])
+        bareme_global['Intelligence'] += int(valeurs_bareme[3])
     else:
+        bareme_global = {key: bareme_global[key] // 4 for key in bareme_global.keys()}
+        print(bareme_global)
         document["zone_question"].html = "Le questionnaire est fini !"
         document["image"].remove()
         document["Reponse1"].remove()
