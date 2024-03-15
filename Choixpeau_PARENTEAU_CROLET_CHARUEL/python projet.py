@@ -83,7 +83,7 @@ def indexation(tab: list) -> dict:
         })
     
     #ajuste le nombre d'élèves par maison
-    min_characters_per_house = min(len(characters) for characters in houses_characters.values())
+    min_characters_per_house = 28
     
     selected_characters = []
     for characters in houses_characters.values():
@@ -134,6 +134,9 @@ def best_house(tab: dict) -> str:
         if nb > maximum:
             maximum = nb
             top_house = house
+    if top_house == ['Gryffindor'] and houses['Gryffindor'] == houses['Hufflepuff']:
+        top_house == 'Hufflepuff'
+
     return top_house
 
 def demarrage_questionnaire(ev):
@@ -151,13 +154,11 @@ def demarrage_questionnaire(ev):
     document["espace_interactif"] <= question 
     #ajout de boutons contenant les réponses
     reponses = ['Reponse A', 'Reponse B', 'Reponse C']
-    compteur = 1
     for reponse in reponses:
-        bouton = html.BUTTON(dico_questions[progression_question][reponse], id=f"Reponse{compteur}", Class="glow-on-hover")
-        compteur += 1     
+        bouton = html.BUTTON(dico_questions[progression_question][reponse], id=reponse, Class="glow-on-hover")   
         document["espace_interactif"] <= bouton
         document["espace_interactif"] <= html.B("<br>")
-        document[bouton.id].bind("click", bouton_reponse)
+        document[reponse].bind("click", bouton_reponse)
     progression_question += 1
 
 document["Demarrage"].bind("click", demarrage_questionnaire)
@@ -182,6 +183,7 @@ def reinitialiser_questionnaire(ev):
     document["display"].clear()
     document["display"] <= html.IMG(src='Dumbledore.gif', width=300, height=400, id="image")
     document["Redémarrage"].remove()
+    document["Résultat"].clear()
 
 def bouton_reponse(ev):
     '''
@@ -194,13 +196,13 @@ def bouton_reponse(ev):
     bouton_id = ev.target.id
     if progression_question < 15:
         #changement du texte des boutons et de la question
-        document["Reponse1"].textContent = dico_questions[progression_question]['Reponse A']
-        document["Reponse2"].textContent = dico_questions[progression_question]['Reponse B']
-        document["Reponse3"].textContent = dico_questions[progression_question]['Reponse C']
+        document["Reponse A"].textContent = dico_questions[progression_question]['Reponse A']
+        document["Reponse B"].textContent = dico_questions[progression_question]['Reponse B']
+        document["Reponse C"].textContent = dico_questions[progression_question]['Reponse C']
         document["zone_question"].html = dico_questions[progression_question]['Question']
-        if bouton_id == "Reponse1":
+        if bouton_id == "Reponse A":
             bareme_correspondant = 'Bareme A'    
-        elif bouton_id == "Reponse2":
+        elif bouton_id == "Reponse B":
             bareme_correspondant = 'Bareme B'
         else:
             bareme_correspondant = 'Bareme C'
@@ -215,23 +217,23 @@ def bouton_reponse(ev):
         #affichage de fin
         bareme_global = {key: bareme_global[key] // 4 for key in bareme_global.keys()}
         print(bareme_global)
-        document["zone_question"].html = "Le questionnaire est fini !"
+        document["zone_question"].html = "Le questionnaire est fini ! Veux-tu retenter ?"
         document["image"].remove()
-        document["Reponse1"].remove()
-        document["Reponse2"].remove()
-        document["Reponse3"].remove()
+        document["Reponse A"].remove()
+        document["Reponse B"].remove()
+        document["Reponse C"].remove()
         resultat_maison = profil_personnalise(bareme_global)
         if resultat_maison == 'Gryffindor':
-            document["display"] <= html.IMG(src='gryffondor.jpg', width=300, height=400)
+            document["display"] <= html.IMG(src='gryffondor.jpg', width=200, height=300)
             sound_file = 'gryffondor'
         elif resultat_maison == 'Slytherin':
-            document["display"] <= html.IMG(src='serpentard.jpg', width=300, height=400)
+            document["display"] <= html.IMG(src='serpentard.jpg', width=200, height=300)
             sound_file = 'serpentard'
         elif resultat_maison == 'Hufflepuff':
-            document["display"] <= html.IMG(src='poufsouffle.gif', width=300, height=400)
+            document["display"] <= html.IMG(src='poufsouffle.gif', width=200, height=300)
             sound_file = 'poufsouffle'
         else:
-            document["display"] <= html.IMG(src='serdaigle.gif', width=300, height=400)
+            document["display"] <= html.IMG(src='serdaigle.gif', width=200, height=300)
             sound_file = 'serdaigle'
         if choix_son == '2':
             house_audio = html.AUDIO(src=f'{sound_file}.mp3', autoplay=True)
@@ -276,15 +278,17 @@ def profil_personnalise(chosen_characteristics: dict) -> str:
     custom_distance = distance_addition(indexed_characters_tab, chosen_characteristics)
     custom_result = sorted(custom_distance, key=lambda x: x['Distance'])
     custom_house_result = best_house(custom_result[:best_k])
-    document["espace_interactif"] <= html.B("<br>") + "Tes plus proches voisins sont : "
+    document["Résultat"].clear()
+    document["Résultat"] <= html.B("<br>") + "Tes plus proches voisins sont : "
     for i in range(best_k):
-        document["espace_interactif"] <= html.B("<br>") + f"- {custom_result[i]['Name']} de la maison {custom_result[i]['House']}"
-    document["espace_interactif"] <= html.B("<br>") + f"Tu appartiens donc à la maison {custom_house_result} !"
+        document["Résultat"] <= html.B("<br>") + f"- {custom_result[i]['Name']} de la maison {custom_result[i]['House']}"
+    document["Résultat"] <= html.B("<br>") + f"Tu appartiens donc à la maison {custom_house_result} !"
     return custom_house_result
 
 
 #définition de variables importantes
 bareme_global = {'Ambition': 0, 'Courage': 0, 'Good': 0, 'Intelligence': 0}
 indexed_characters_tab = indexation(updated_characters_tab)
+print(indexed_characters_tab)
 best_k = 0
 progression_question = 0
